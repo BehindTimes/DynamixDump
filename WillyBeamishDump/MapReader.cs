@@ -16,7 +16,7 @@ namespace WillyBeamishDump
         }
         public struct ResourceFileInfo
         {
-            public string strName;
+            public string strName1;
             public int numFiles;
             public List<FileInfo> file_info;
         }
