@@ -598,13 +598,6 @@ namespace WillyBeamishDump
                 Directory.CreateDirectory(strRawDir);
             }
 
-            /*string fileName = strRawDir + strOut;
-
-            using (BinaryWriter writer = new BinaryWriter(File.Open(fileName, FileMode.Create)))
-            {
-                writer.Write(data);
-            }*/
-
             string header = Encoding.ASCII.GetString(data, 0, 4);
             if (header == "SSM:")
             {
@@ -621,56 +614,58 @@ namespace WillyBeamishDump
                 {
                     byte[] databytes = new byte[length];
                     Buffer.BlockCopy(data, 8, databytes, 0, (int)length);
+                    List < byte[]> sngList = new List <byte[]>();
 
-                    string headerSNG = Encoding.ASCII.GetString(databytes, 0, 4);
-                    
-                    if (headerSNG == "SNG:")
+                    int songpos = 0;
+                    string headerSNG = Encoding.ASCII.GetString(databytes, songpos, 4);
+
+                    uint totallength = 0;
+
+                    while (headerSNG == "SNG:")
                     {
-                        uint snglength = BitConverter.ToUInt32(databytes, 4);
-                        
-                        if (databytes.Length - 4 >= snglength)
+                        totallength += 13;
+                        songpos += 4;
+                        int snglength = BitConverter.ToInt32(databytes, songpos);
+                        songpos += 4;
+                        if (databytes.Length >= songpos + snglength)
                         {
                             byte[] sngbytes = new byte[snglength];
-                            byte[] otherbytes = null;
-                            Buffer.BlockCopy(databytes, 8, sngbytes, 0, (int)snglength);
-                            int otherbyteslength = (databytes.Length - 8) - (int)snglength;
-                            if (otherbyteslength > 0)
-                            {
-                                otherbytes = new byte[otherbyteslength];
-                                Buffer.BlockCopy(databytes, databytes.Length - otherbyteslength, otherbytes, 0, (int)otherbyteslength);
-                            }
-
+                            Buffer.BlockCopy(databytes, songpos, sngbytes, 0, (int)snglength);
                             byte[] unpack_song_data;
                             UnpackData(sngbytes, out unpack_song_data);
-                            uint totallength = 13 + (uint)unpack_song_data.Length;
-                            if (otherbytes != null)
-                            {
-                                totallength += (uint)otherbytes.Length;
-                            }
-
-                            totallength |= 0x80000000;
-
-                            using (BinaryWriter writer = new BinaryWriter(File.Open(fileNameLZW, FileMode.Create)))
-                            {
-                                writer.Write(Encoding.ASCII.GetBytes(header));
-                                writer.Write(totallength);
-                                writer.Write(Encoding.ASCII.GetBytes(headerSNG));
-                                int snglengthlzw = unpack_song_data.Length + 5;
-                                byte compressType = 0;
-                                writer.Write(snglengthlzw);
-                                writer.Write(compressType);
-                                writer.Write(unpack_song_data.Length);
-                                writer.Write(unpack_song_data);
-
-                                if (otherbytes != null)
-                                {
-                                    if (otherbytes != null)
-                                    {
-                                        writer.Write(otherbytes);
-                                    }
-                                }
-                            }
+                            sngList.Add(unpack_song_data);
+                            songpos += snglength;
+                            totallength += (uint)unpack_song_data.Length;
+                            headerSNG = Encoding.ASCII.GetString(databytes, songpos, 4);
                         }
+                        else
+                        {
+                            throw new Exception("Invalid SNG");
+                        }
+                    }
+                   
+                    int otherbyteslength = databytes.Length - songpos;
+                    byte[] otherbytes = new byte[otherbyteslength];
+                    Buffer.BlockCopy(databytes, databytes.Length - otherbyteslength, otherbytes, 0, otherbyteslength);
+                    totallength += (uint)otherbyteslength;
+                    totallength |= 0x80000000;
+                    headerSNG = "SNG:";
+
+                    using (BinaryWriter writer = new BinaryWriter(File.Open(fileNameLZW, FileMode.Create)))
+                    {
+                        byte compressType = 0;
+                        writer.Write(Encoding.ASCII.GetBytes(header));
+                        writer.Write(totallength);
+                        for(int index = 0; index < sngList.Count; ++index)
+                        {
+                            writer.Write(Encoding.ASCII.GetBytes(headerSNG));
+                            int songlength = 5 + sngList[index].Length;
+                            writer.Write(songlength);
+                            writer.Write(compressType);
+                            writer.Write(sngList[index].Length);
+                            writer.Write(sngList[index]);
+                        }
+                        writer.Write(otherbytes);
                     }
                 }
             }
