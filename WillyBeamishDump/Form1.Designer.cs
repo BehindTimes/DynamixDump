@@ -61,7 +61,7 @@
             this.tbResource.Name = "tbResource";
             this.tbResource.Size = new System.Drawing.Size(360, 20);
             this.tbResource.TabIndex = 2;
-            this.tbResource.Text = "F:\\source\\WillyBeamishDump\\files\\volume.vga";
+            this.tbResource.Text = "F:\\source\\WillyBeamishDump\\files\\willy\\resource.map";
             // 
             // tbOut
             // 
@@ -69,7 +69,7 @@
             this.tbOut.Name = "tbOut";
             this.tbOut.Size = new System.Drawing.Size(360, 20);
             this.tbOut.TabIndex = 3;
-            this.tbOut.Text = "F:\\source\\WillyBeamishDump\\files\\out";
+            this.tbOut.Text = "F:\\source\\WillyBeamishDump\\files\\willy\\out";
             // 
             // btnBrowseResource
             // 

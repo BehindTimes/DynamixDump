@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Drawing;
 using System.Data.SqlTypes;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ExplorerBar;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace WillyBeamishDump
 {
@@ -536,6 +538,61 @@ namespace WillyBeamishDump
             }
         }
 
+        private bool UnpackRLE(uint nSize, byte[] byte_data, ref byte[] byte_data_out)
+        {
+            List<byte> listBytes = new List<byte>();
+            int nPos = 5; // Skip the method and size
+            int left = (int)nSize;
+            int lenR = 0;
+            int lenW = 0;
+            while (left > 0 && nPos < byte_data.Length - 1)
+            {
+                lenR = byte_data[nPos];
+                nPos++;
+                if (lenR == 128)
+                {
+                    lenW = 0;
+                }
+                else if (lenR <= 127)
+                {
+                    lenW = Math.Min(lenR, left);
+                    for (int jj = 0; jj < lenW; ++jj)
+                    {
+                        if(nPos >= byte_data.Length)
+                        {
+                            return false;
+                        }
+                        listBytes.Add(byte_data[nPos]);
+                        nPos++;
+                    }
+                    for (; lenR > lenW; lenR--)
+                    {
+                        nPos++;
+                    }
+                }
+                else
+                {
+                    lenW = Math.Min(lenR & 0x7F, left);
+                    byte val = byte_data[nPos];
+                    nPos++;
+                    for (int jj = 0; jj < lenW; ++jj)
+                    {
+                        listBytes.Add(val);
+                    }
+                }
+                left -= lenW;
+            }
+            if (nSize == listBytes.Count)
+            {
+                Buffer.BlockCopy(listBytes.ToArray(), 0, byte_data_out, 0, (int)nSize);
+            }
+            else
+            {
+                return false;
+            }
+            return true;
+        }
+
         private uint UnpackData(byte[] byte_data, out byte[] byte_data_out)
         {
             int method = byte_data[0];
@@ -547,6 +604,11 @@ namespace WillyBeamishDump
             {
                 case 1:
                     // RLE, not implemented because it doesn't use it
+                    if (!UnpackRLE(nSize, byte_data, ref byte_data_out))
+                    {
+                        byte_data_out = byte_data; // Investigate why this is failing
+                        return 0;
+                    }
                     break;
                 case 2:
                     UnpackLZW(nSize, byte_data, ref byte_data_out);
@@ -683,9 +745,9 @@ namespace WillyBeamishDump
                 Directory.CreateDirectory(strRawDir);
             }
 
-            /*string fileName = strRawDir + strOut;
+            string fileName = strRawDir + strOut + ".lzw";
 
-            using (BinaryWriter writer = new BinaryWriter(File.Open(fileName, FileMode.Create)))
+            /*using (BinaryWriter writer = new BinaryWriter(File.Open(fileName, FileMode.Create)))
             {
                 writer.Write(data);
             }*/
@@ -701,17 +763,28 @@ namespace WillyBeamishDump
                 byte[] outdata;
                 uint outsize = UnpackData(databytes, out outdata);
 
-                string fileNameLZW = strRawDir + strOut;
-                int totallength = 5 + outdata.Length;
-
-                using (BinaryWriter writer = new BinaryWriter(File.Open(fileNameLZW, FileMode.Create)))
+                if(0 == outsize) // Our decompression failed, investigate why
                 {
-                    writer.Write(Encoding.ASCII.GetBytes(header));
-                    writer.Write(totallength);
-                    byte compressType = 0;
-                    writer.Write(compressType);
-                    writer.Write(outdata.Length);
-                    writer.Write(outdata);
+                    string fileNameLZW = strRawDir + strOut;
+                    using (BinaryWriter writer = new BinaryWriter(File.Open(fileNameLZW, FileMode.Create)))
+                    {
+                        writer.Write(data);
+                    }
+                }
+                else
+                {
+                    string fileNameLZW = strRawDir + strOut;
+                    int totallength = 5 + outdata.Length;
+
+                    using (BinaryWriter writer = new BinaryWriter(File.Open(fileNameLZW, FileMode.Create)))
+                    {
+                        writer.Write(Encoding.ASCII.GetBytes(header));
+                        writer.Write(totallength);
+                        byte compressType = 0;
+                        writer.Write(compressType);
+                        writer.Write(outdata.Length);
+                        writer.Write(outdata);
+                    }
                 }
             }
         }
@@ -821,6 +894,76 @@ namespace WillyBeamishDump
             }
         }
 
+        private void WriteTds(string strOut, byte[] data)
+        {
+            string strRawDir = m_strOutDir + @"tds\";
+            if (!Directory.Exists(strRawDir))
+            {
+                Directory.CreateDirectory(strRawDir);
+            }
+
+            string fileName = strRawDir + strOut;
+            string headerVer = Encoding.ASCII.GetString(data, 0, 4);
+
+            if (headerVer == "THD:")
+            {
+                int lengthTds = BitConverter.ToInt32(data, 4);
+                byte[] tdsbytes = new byte[lengthTds];
+                Buffer.BlockCopy(data, 8, tdsbytes, 0, lengthTds);
+                byte[] outdata;
+                uint outsize = UnpackData(tdsbytes, out outdata);
+
+                using (BinaryWriter writer = new BinaryWriter(File.Open(fileName, FileMode.Create)))
+                {
+                    byte compressType = 0;
+                    writer.Write(Encoding.ASCII.GetBytes(headerVer));
+                    writer.Write(outdata.Length + 5);
+                    writer.Write(compressType);
+                    writer.Write(outdata.Length);
+                    writer.Write(outdata);
+                }
+            }
+            else
+            {
+                throw new Exception("Invalid TDS");
+            }
+        }
+
+        private void WriteDds(string strOut, byte[] data)
+        {
+            string strRawDir = m_strOutDir + @"dds\";
+            if (!Directory.Exists(strRawDir))
+            {
+                Directory.CreateDirectory(strRawDir);
+            }
+
+            string fileName = strRawDir + strOut;
+            string headerVer = Encoding.ASCII.GetString(data, 0, 4);
+
+            if (headerVer == "DDS:")
+            {
+                int lengthTds = BitConverter.ToInt32(data, 4);
+                byte[] tdsbytes = new byte[lengthTds];
+                Buffer.BlockCopy(data, 8, tdsbytes, 0, lengthTds);
+                byte[] outdata;
+                uint outsize = UnpackData(tdsbytes, out outdata);
+
+                using (BinaryWriter writer = new BinaryWriter(File.Open(fileName, FileMode.Create)))
+                {
+                    byte compressType = 0;
+                    writer.Write(Encoding.ASCII.GetBytes(headerVer));
+                    writer.Write(outdata.Length + 5);
+                    writer.Write(compressType);
+                    writer.Write(outdata.Length);
+                    writer.Write(outdata);
+                }
+            }
+            else
+            {
+                throw new Exception("Invalid DDS");
+            }
+        }
+
         private void WriteTtm(string strOut, byte[] data)
         {
             string strRawDir = m_strOutDir + @"ttm\";
@@ -891,6 +1034,10 @@ namespace WillyBeamishDump
 
         private void WriteGeneric(string strOut, byte[] data)
         {
+            if(data == null)
+            {
+                return;
+            }
             string strRawDir = m_strOutDir + @"generic\";
             if (!Directory.Exists(strRawDir))
             {
@@ -1104,6 +1251,12 @@ namespace WillyBeamishDump
                     break;
                 case ".TTM":
                     WriteTtm(rfd.strFile, rfd.data);
+                    break;
+                case ".TDS":
+                    WriteTds(rfd.strFile, rfd.data);
+                    break;
+                case ".DDS":
+                    WriteDds(rfd.strFile, rfd.data);
                     break;
                 default:
                     WriteGeneric(rfd.strFile, rfd.data);
