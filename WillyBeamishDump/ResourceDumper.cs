@@ -615,7 +615,7 @@ namespace WillyBeamishDump
                     break;
                 default:
                     // I'm missing something
-                    break;
+                    return 0;
             }
             return nSize;
         }
@@ -891,6 +891,92 @@ namespace WillyBeamishDump
             else
             {
                 throw new Exception("Invalid ADS");
+            }
+        }
+
+        private void processContainer(out List<byte> outlist, byte[] data)
+        {
+            outlist = new List<byte>();
+            int nPos = 0;
+
+            while (nPos < data.Length)
+            {
+                if (nPos + 1 >= data.Length)
+                {
+                    break;
+                }
+                string headerVer = Encoding.ASCII.GetString(data, nPos, 4);
+                //outlist.AddRange(Encoding.ASCII.GetBytes(headerVer));
+                nPos += 4;
+                byte[] lengthbytes = new byte[4];
+                Buffer.BlockCopy(data, nPos, lengthbytes, 0, 4);
+                uint length = BitConverter.ToUInt32(lengthbytes, 0);
+                bool isContainer = (length & 0x80000000) > 0;
+                //outlist.AddRange(lengthbytes);
+                if (isContainer)
+                {
+                    length ^= 0x80000000;
+                }
+                int ilength = (int)length;
+                nPos += 4;
+                byte[] tempbytes = new byte[ilength];
+                if (ilength + nPos > data.Length)
+                {
+                    return;
+                }
+                Buffer.BlockCopy(data, nPos, tempbytes, 0, ilength);
+                nPos += ilength;
+                if (isContainer)
+                {
+                    List<byte> containerList;
+                    processContainer(out containerList, tempbytes);
+                    outlist.AddRange(Encoding.ASCII.GetBytes(headerVer));
+                    uint outsize = (uint)containerList.Count | 0x80000000;
+                    outlist.AddRange(BitConverter.GetBytes(outsize));
+                    outlist.AddRange(containerList.ToArray());
+                    //tempList.AddRange();
+                }
+                else
+                {
+                    byte[] outdata;
+                    uint outsize = UnpackData(tempbytes, out outdata);
+                    if(outsize > 0)
+                    {
+                        uint compresssize = outsize + 5;
+                        byte compresstype = 0;
+                        outlist.AddRange(Encoding.ASCII.GetBytes(headerVer));
+                        outlist.AddRange(BitConverter.GetBytes(compresssize));
+                        outlist.Add(compresstype);
+                        outlist.AddRange(BitConverter.GetBytes(outsize));
+                        outlist.AddRange(outdata);
+                    }
+                    else
+                    {
+                        // Really should be comparing against the header type to determine if it's compressed,
+                        // but this is just a quick utility, and all the files I need, I know will pass
+                        outlist.AddRange(Encoding.ASCII.GetBytes(headerVer));
+                        outlist.AddRange(lengthbytes);
+                        outlist.AddRange(tempbytes);
+                    }
+                }
+            }
+        }
+
+        private void WriteOvl(string strOut, byte[] data)
+        {
+            List<byte> outlist;
+            string strRawDir = m_strOutDir + @"ovl\";
+            if (!Directory.Exists(strRawDir))
+            {
+                Directory.CreateDirectory(strRawDir);
+            }
+
+            processContainer(out outlist, data);
+            string fileName = strRawDir + strOut;
+
+            using (BinaryWriter writer = new BinaryWriter(File.Open(fileName, FileMode.Create)))
+            {
+                writer.Write(outlist.ToArray());
             }
         }
 
@@ -1257,6 +1343,9 @@ namespace WillyBeamishDump
                     break;
                 case ".DDS":
                     WriteDds(rfd.strFile, rfd.data);
+                    break;
+                case ".OVL":
+                    WriteOvl(rfd.strFile, rfd.data);
                     break;
                 default:
                     WriteGeneric(rfd.strFile, rfd.data);

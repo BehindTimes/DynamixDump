@@ -67,10 +67,10 @@ namespace WillyBeamishDump
 
         private void btnBrowseResource_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog folderBrowserDialog1 = new FolderBrowserDialog();
-            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if(openFileDialog.ShowDialog () == DialogResult.OK)
             {
-                tbResource.Text = folderBrowserDialog1.SelectedPath;
+                tbResource.Text = openFileDialog.FileName;
             }
         }
 
