@@ -1717,6 +1717,10 @@ namespace TTMTest
             {
                 return 8;
             }
+            else if (strText == "kDlgFlagLo40")
+            {
+                return 0x40;
+            }
             else if (strText == "kDlgFlagLo80")
             {
                 return 0x80;
