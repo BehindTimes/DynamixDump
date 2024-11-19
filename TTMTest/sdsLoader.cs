@@ -235,7 +235,7 @@ namespace TTMTest
                 UInt16 fontColor = BitConverter.ToUInt16(sceneFile, nDataPos);
                 nDataPos += 2;
 
-                XmlElement numElement = m_doc.CreateElement("num");
+                XmlElement numElement = m_doc.CreateElement("dialog_num");
                 XmlText numtext = m_doc.CreateTextNode(num.ToString());
                 numElement.AppendChild(numtext);
                 dialogElement.AppendChild(numElement);
@@ -1029,8 +1029,8 @@ namespace TTMTest
                 strDir += "\\";
             }
 
-            string strFile = strDir + "S12.SAV";
-            string strXml = strDir + "S12.SDS.xml";
+            string strFile = strDir + "S5.SAV";
+            string strXml = strDir + "S5.SDS.xml";
             m_doc = new XmlDocument();
             m_doc.Load(strXml);
             if (m_doc.DocumentElement != null)
@@ -1460,7 +1460,7 @@ namespace TTMTest
 
             List<byte> listDialog = new List<byte>();
 
-            XmlNode? numNodes = FindNode(root.ChildNodes, "num");
+            XmlNode? numNodes = FindNode(root.ChildNodes, "dialog_num");
             XmlNode? RectNodes = FindNode(root.ChildNodes, "Rect");
             XmlNode? bgColNodes = FindNode(root.ChildNodes, "bgColor");
             XmlNode? fontColNodes = FindNode(root.ChildNodes, "fontColor");
