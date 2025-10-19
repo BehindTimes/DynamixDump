@@ -7,3 +7,5 @@ This code was quickly written, and assuming a perfect copy of the game (unmodded
 Also attached is a program to compress and decompress the LZW files.  It's matched every file I've put it through for Willy Beamish and Rise of the Dragon, but I haven't done a full test of every single compressed section in their games, so there might be a bug or two.  This tries to do an exact matching compression, rather than a lazy LZW compression from 
 
 https://www.vogons.org/viewtopic.php?p=273120#273120
+
+The decompression code is based off of ScummVM's Dynamix LZW code.
