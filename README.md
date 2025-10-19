@@ -4,4 +4,4 @@ Also included is a utility to convert the TTM files to/from a human readable XML
 
 This code was quickly written, and assuming a perfect copy of the game (unmodded), so I didn't add any real error detection, where there probably should be some.
 
-I used the ScummVM DGDS as a base starting point to get the LZW decompression working correctly, as well as reading/writing TTM files.
+Also attached is a program to compress and decompress the LZW files.  It's matched every file I've put it through for Willy Beamish and Rise of the Dragon, but I haven't done a full test of every single compressed section in their games, so there might be a bug or two.
