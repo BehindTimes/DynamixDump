@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WillyBeamishDump", "WillyBe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TTMTest", "TTMTest\TTMTest.csproj", "{0BCFD127-D5FC-43CC-B243-ECD0E9499043}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCRTest", "SCRTest\SCRTest.csproj", "{407C4574-50DC-7466-7E75-B8B52FCDDAB0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamixLZW", "DynamixLZW\DynamixLZW.csproj", "{D3C0D72F-316B-43A6-B940-0C926B2EDB25}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{0BCFD127-D5FC-43CC-B243-ECD0E9499043}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BCFD127-D5FC-43CC-B243-ECD0E9499043}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BCFD127-D5FC-43CC-B243-ECD0E9499043}.Release|Any CPU.Build.0 = Release|Any CPU
+		{407C4574-50DC-7466-7E75-B8B52FCDDAB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{407C4574-50DC-7466-7E75-B8B52FCDDAB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{407C4574-50DC-7466-7E75-B8B52FCDDAB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{407C4574-50DC-7466-7E75-B8B52FCDDAB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3C0D72F-316B-43A6-B940-0C926B2EDB25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3C0D72F-316B-43A6-B940-0C926B2EDB25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3C0D72F-316B-43A6-B940-0C926B2EDB25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3C0D72F-316B-43A6-B940-0C926B2EDB25}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
