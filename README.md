@@ -4,6 +4,6 @@ Also included is a utility to convert the TTM files to/from a human readable XML
 
 This code was quickly written, and assuming a perfect copy of the game (unmodded), so I didn't add any real error detection, where there probably should be some.
 
-Also attached is a program to compress and decompress the LZW files.  It's matched every file I've put it through for Willy Beamish and Rise of the Dragon, but I haven't done a full test of every single compressed section in their games, so there might be a bug or two.  (This tries to do an exact compression, rather than a lazy LZW compression from 
+Also attached is a program to compress and decompress the LZW files.  It's matched every file I've put it through for Willy Beamish and Rise of the Dragon, but I haven't done a full test of every single compressed section in their games, so there might be a bug or two.  (This tries to do an exact matching compression, rather than a lazy LZW compression from 
 
 https://www.vogons.org/viewtopic.php?p=273120#273120
