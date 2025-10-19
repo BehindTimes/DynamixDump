@@ -1029,8 +1029,8 @@ namespace TTMTest
                 strDir += "\\";
             }
 
-            string strFile = strDir + "S5.SAV";
-            string strXml = strDir + "S5.SDS.xml";
+            string strFile = strDir + "BBEDROOM.SAV";
+            string strXml = strDir + "BBEDROOM.TTM.xml";
             m_doc = new XmlDocument();
             m_doc.Load(strXml);
             if (m_doc.DocumentElement != null)

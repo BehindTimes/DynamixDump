@@ -379,8 +379,8 @@ namespace TTMTest
             }
             //string strFile = strDir + "DHTHREAT.SAV";
             //string strXml = strDir + "DHTHREAT.TTM.xml";
-            string strFile = strDir + "TITLE2.SAV";
-            string strXml = strDir + "TITLE2.TTM.xml";
+            string strFile = strDir + "BBEDROOM.SAV";
+            string strXml = strDir + "BBEDROOM.TTM.xml";
             m_doc = new XmlDocument();
             m_doc.Load(strXml);
             if(m_doc.DocumentElement != null )
